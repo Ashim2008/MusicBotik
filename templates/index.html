@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6" id="appContainer">
+        <!-- Content loaded dynamically via JavaScript -->
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">Loading...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Get auth secret from session storage
+const authSecret = sessionStorage.getItem('auth_secret');
+
+// Redirect to login if no secret
+if (!authSecret) {
+    window.location.href = '/';
+}
+
+function makeAuthenticatedRequest(url, options = {}) {
+    // Add auth secret to request
+    if (authSecret) {
+        if (!options.headers) options.headers = {};
+        options.headers['Authorization'] = `Bearer ${authSecret}`;
+    }
+    return fetch(url, options);
+}
+
+function showAlert(message, type = 'danger') {
+    const alertContainer = document.getElementById('alertContainer');
+    if (alertContainer) {
+        alertContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('auth_secret');
+    window.location.href = '/';
+}
+
+// Load app content dynamically
+async function loadApp() {
+    try {
+        const response = await makeAuthenticatedRequest('/api/user_status');
+        const result = await response.json();
+        
+        if (!response.ok) {
+            // Auth failed, redirect to login
+            logout();
+            return;
+        }
+        
+        const container = document.getElementById('appContainer');
+        
+        if (result.authenticated && result.user) {
+            // Show authenticated UI
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h4 class="card-title">Welcome back, ${result.user.first_name}!</h4>
+                        <p class="text-muted">Your music userbot is ready to use.</p>
+                        <div class="d-grid gap-2">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-music me-2"></i>Music Status</h5>
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="fs-4 text-primary">${result.status.music.joined_chats || 0}</div>
+                                            <small class="text-muted">Joined Chats</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fs-4 text-success">${result.status.music.active_queues || 0}</div>
+                                            <small class="text-muted">Active Queues</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fs-4 text-info">${result.status.music.currently_playing || 0}</div>
+                                            <small class="text-muted">Playing</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-terminal me-2"></i>Commands</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Basic:</strong><br>
+                                            <code>.play &lt;url&gt;</code><br>
+                                            <code>.stop</code><br>
+                                            <code>.skip</code><br>
+                                            <code>.queue</code>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Voice Chat:</strong><br>
+                                            <code>.join</code><br>
+                                            <code>.leave</code><br>
+                                            <code>.music</code><br>
+                                            (show help)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Show login UI
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-music text-primary fa-3x mb-3"></i>
+                            <h3 class="card-title">Setup Telegram Account</h3>
+                            <p class="text-muted">Connect your Telegram account to start using the music userbot</p>
+                        </div>
+
+                        <div id="alertContainer"></div>
+
+                        <!-- Setup steps will be loaded here -->
+                        ${getSetupSteps()}
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-info-circle me-2"></i>Need Help?</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>1.</strong> Go to <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a></li>
+                            <li><strong>2.</strong> Log in with your Telegram account</li>
+                            <li><strong>3.</strong> Create a new app and get API ID and Hash</li>
+                            <li><strong>4.</strong> Enter your credentials and phone number here</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            // Initialize setup form handlers
+            initSetupHandlers();
+        }
+    } catch (error) {
+        console.error('Failed to load app:', error);
+        logout();
+    }
+}
+
+function getSetupSteps() {
+    return `
+        <div id="step1">
+            <h5 class="mb-3"><i class="fas fa-key me-2"></i>Step 1: API Credentials</h5>
+            <p class="small text-muted mb-3">
+                Get your API credentials from 
+                <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>
+            </p>
+            <form id="apiForm">
+                <div class="mb-3">
+                    <label for="apiId" class="form-label">API ID</label>
+                    <input type="number" class="form-control" id="apiId" placeholder="Enter your API ID" required>
+                </div>
+                <div class="mb-3">
+                    <label for="apiHash" class="form-label">API Hash</label>
+                    <input type="text" class="form-control" id="apiHash" placeholder="Enter your API Hash" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary" id="initBtn">
+                        <i class="fas fa-arrow-right me-2"></i>Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="step2" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-phone me-2"></i>Step 2: Phone Number</h5>
+            <form id="phoneForm">
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" placeholder="+1234567890" required>
+                    <div class="form-text">Include country code (e.g., +1234567890)</div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary" id="sendCodeBtn">
+                        <i class="fas fa-sms me-2"></i>Send Code
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="goToStep(1)">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="step3" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Step 3: Verification</h5>
+            <form id="verifyForm">
+                <div class="mb-3">
+                    <label for="code" class="form-label">Verification Code</label>
+                    <input type="text" class="form-control" id="code" placeholder="12345" maxlength="5" required>
+                    <div class="form-text">Enter the 5-digit code sent to your phone</div>
+                </div>
+                <div class="mb-3" id="passwordSection" style="display: none;">
+                    <label for="password" class="form-label">Two-Factor Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your 2FA password">
+                    <div class="form-text">Required if you have 2FA enabled</div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success" id="verifyBtn">
+                        <i class="fas fa-check me-2"></i>Login
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="goToStep(2)">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+}
+
+function goToStep(step) {
+    for (let i = 1; i <= 3; i++) {
+        const stepEl = document.getElementById('step' + i);
+        if (stepEl) {
+            stepEl.style.display = i === step ? 'block' : 'none';
+        }
+    }
+}
+
+function initSetupHandlers() {
+    // Step 1: Initialize API
+    const apiForm = document.getElementById('apiForm');
+    if (apiForm) {
+        apiForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const initBtn = document.getElementById('initBtn');
+            const apiId = document.getElementById('apiId').value;
+            const apiHash = document.getElementById('apiHash').value;
+            
+            initBtn.disabled = true;
+            initBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Initializing...';
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/init', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_id: apiId, api_hash: apiHash })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    goToStep(2);
+                } else {
+                    showAlert(result.error);
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                initBtn.disabled = false;
+                initBtn.innerHTML = '<i class="fas fa-arrow-right me-2"></i>Continue';
+            }
+        });
+    }
+
+    // Step 2: Send code
+    const phoneForm = document.getElementById('phoneForm');
+    if (phoneForm) {
+        phoneForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            const phone = document.getElementById('phone').value;
+            
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/send_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    goToStep(3);
+                } else {
+                    showAlert(result.error);
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.innerHTML = '<i class="fas fa-sms me-2"></i>Send Code';
+            }
+        });
+    }
+
+    // Step 3: Verify code
+    const verifyForm = document.getElementById('verifyForm');
+    if (verifyForm) {
+        verifyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const verifyBtn = document.getElementById('verifyBtn');
+            const code = document.getElementById('code').value;
+            const password = document.getElementById('password').value;
+            
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/verify_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, password: password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    setTimeout(() => loadApp(), 1500);
+                } else {
+                    if (result.error === '2FA_REQUIRED' || result.requires_password) {
+                        document.getElementById('passwordSection').style.display = 'block';
+                        showAlert('Требуется пароль двухфакторной аутентификации', 'warning');
+                    } else {
+                        showAlert(result.error);
+                    }
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i class="fas fa-check me-2"></i>Login';
+            }
+        });
+    }
+}
+
+// Load app on page ready
+document.addEventListener('DOMContentLoaded', loadApp);
+</script>
+{% endblock %}

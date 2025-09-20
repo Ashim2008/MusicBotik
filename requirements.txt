@@ -1,0 +1,9 @@
+telethon==1.41.2
+pytgcalls[telethon]==2.1.0
+yt-dlp==2025.9.5
+ffmpeg-python==0.2.0
+aiohttp==3.12.15
+aiohttp-jinja2==1.5
+jinja2==3.1.2
+aiofiles==23.1.0
+ShazamAPI==0.0.2

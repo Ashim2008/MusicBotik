@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: telegram-music-bot
+    env: python
+    region: oregon
+    buildCommand: apt-get update && apt-get install -y ffmpeg && pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: PYTHON_VERSION
+        value: 3.9.19
+    autoDeploy: false
+    disk:
+      name: music-bot-storage
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

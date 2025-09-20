@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+                <p class="text-muted mb-0">Welcome back, {{ user.first_name }}!</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" onclick="refreshStatus()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- User Info -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-user-circle text-primary fa-3x mb-3"></i>
+                <h5 class="card-title">{{ user.first_name }} {{ user.last_name or '' }}</h5>
+                <p class="text-muted">@{{ user.username or 'No username' }}</p>
+                <small class="text-muted">ID: {{ user.id }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Status -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-music me-2"></i>Music Status</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="fs-2 text-primary" id="joinedChats">{{ status.music.joined_chats or 0 }}</div>
+                            <small class="text-muted">Joined Voice Chats</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="fs-2 text-success" id="activeQueues">{{ status.music.active_queues or 0 }}</div>
+                            <small class="text-muted">Active Queues</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="fs-2 text-info" id="currentlyPlaying">{{ status.music.currently_playing or 0 }}</div>
+                            <small class="text-muted">Currently Playing</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Commands -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-terminal me-2"></i>Music Commands</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary">Basic Commands:</h6>
+                        <ul class="list-unstyled small">
+                            <li><code>.play &lt;url&gt;</code> - Play music from URL</li>
+                            <li><code>.stop</code> - Stop current playback</li>
+                            <li><code>.skip</code> - Skip to next track</li>
+                            <li><code>.queue</code> - Show current queue</li>
+                        </ul>
+                        
+                        <h6 class="text-primary">Voice Chat:</h6>
+                        <ul class="list-unstyled small">
+                            <li><code>.join</code> - Join voice chat</li>
+                            <li><code>.leave</code> - Leave voice chat</li>
+                        </ul>
+                        
+                        <h6 class="text-primary">Help:</h6>
+                        <ul class="list-unstyled small">
+                            <li><code>.music</code> - Show all commands</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>How to Use</h5>
+            </div>
+            <div class="card-body">
+                <ol class="small">
+                    <li>Join a Telegram group where you want to use music</li>
+                    <li>Start a voice chat in that group</li>
+                    <li>Send <code>.join</code> to join the voice chat</li>
+                    <li>Send <code>.play &lt;YouTube/SoundCloud URL&gt;</code> to play music</li>
+                    <li>Use other commands to control playback</li>
+                </ol>
+                
+                <div class="alert alert-info small" role="alert">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    <strong>Tip:</strong> All commands start with a dot (.) and work only in groups where you have admin rights or voice chat permissions.
+                </div>
+                
+                <div class="alert alert-warning small" role="alert">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <strong>Note:</strong> Userbot commands are sent as regular messages. Other users can see them.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Account</h6>
+                        <p class="small text-muted">Currently logged in as {{ user.first_name }} (@{{ user.username or 'no_username' }})</p>
+                        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Version</h6>
+                        <p class="small text-muted">Telegram Music Userbot v{{ status.version or "1.0.0" }}</p>
+                        <a href="https://github.com" class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fab fa-github me-1"></i>GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function refreshStatus() {
+    try {
+        const response = await fetch('/api/status');
+        const result = await response.json();
+        
+        if (result.success) {
+            const status = result.status;
+            document.getElementById('joinedChats').textContent = status.music.joined_chats || 0;
+            document.getElementById('activeQueues').textContent = status.music.active_queues || 0;
+            document.getElementById('currentlyPlaying').textContent = status.music.currently_playing || 0;
+        }
+    } catch (error) {
+        console.error('Failed to refresh status:', error);
+    }
+}
+
+// Auto refresh every 30 seconds
+setInterval(refreshStatus, 30000);
+</script>
+{% endblock %}

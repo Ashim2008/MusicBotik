@@ -1,0 +1,166 @@
+/* Custom styles for Telegram Music Userbot */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 10px 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: translateY(-1px);
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.alert {
+    border: none;
+    border-radius: 10px;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-info {
+    color: #17a2b8 !important;
+}
+
+/* Loading spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Code styling */
+code {
+    background-color: #f1f3f4;
+    color: #d63384;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* Custom progress bars */
+.progress {
+    height: 8px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+/* Dashboard stats */
+.fs-2 {
+    font-size: 2.5rem !important;
+    font-weight: 700;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .fs-2 {
+        font-size: 2rem !important;
+    }
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Navigation dropdown */
+.dropdown-menu {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin: 2px 5px;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: none;
+}
+
+/* Status indicators */
+.badge {
+    border-radius: 20px;
+    padding: 8px 12px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}

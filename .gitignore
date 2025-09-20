@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pythonlibs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+data/
+downloads/
+*.session
+*.session-journal
+*.raw
+logs/
+*.log
+
+# Environment variables
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Telegram session files
+*.session*
+
+# Audio files
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.raw
+
+# Secrets and credentials
+config.ini
+credentials.json
+auth_secret.txt
+
+# Cache
+.cache/
+*.cache
